@@ -1,0 +1,28 @@
+# Environnement virtuel Python
+.venv/
+
+# Fichiers cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Fichiers cache Jupyter Notebook
+.ipynb_checkpoints/
+
+# Fichiers de configuration IDE (VSCode)
+.vscode/
+
+# Données (Grosses données gérées par DVC)
+/data/*.csv
+/data/*.parquet
+/data/*.txt
+# DVC crée son propre .gitignore dans /data/, mais ceci est une bonne mesure de sécurité.
+
+# Artefacts de Modèle
+/mlruns/
+/models/*.joblib
+/models/*.h5 # Pour les modèles Keras/TensorFlow
+
+# Fichiers temporaires
+*.log
