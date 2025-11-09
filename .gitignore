@@ -27,3 +27,11 @@ data/
 
 # Fichiers temporaires
 *.log
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+*.sheet.md
+
+notebooks/mlruns/
