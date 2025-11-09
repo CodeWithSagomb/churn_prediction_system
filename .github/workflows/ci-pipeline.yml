@@ -1,34 +1,46 @@
+# Nom du workflow
 name: CI - Test and Integration Pipeline
 
+# Déclencheurs
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
 
+# Jobs
 jobs:
   test-and-integrate:
+    # Nom du job qui s'affichera sur GitHub
+    name: Build, Test, and Integrate
+    
+    # Machine virtuelle
     runs-on: ubuntu-latest
 
+    # Séquence d'étapes
     steps:
+      # 1. Récupérer le code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Mettre en place Python
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'        # <--- Active le cache pip automatiquement
 
+      # 3. Installer les dépendances
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run All Unit Tests
+      # 4. Exécuter TOUS les tests avec pytest
+      # Combine les tests unitaires et le test de performance en une seule étape
+      - name: Run all tests (unit and performance)
         run: pytest -v
 
-      - name: Run Integration Test (Light Training)
-        env:
-          FAST_MODE: "true"   # <--- Permet un mode rapide dans ton script
+      # 5. Lancer l'entraînement comme test d'intégration
+      # Cette étape vérifie que le pipeline complet s'exécute sans planter.
+      - name: Run Full Training Pipeline (Integration Test)
         run: python -m src.model_training
