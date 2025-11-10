@@ -1,0 +1,134 @@
+# params.yml
+#
+# Configuration principale pour le système de prédiction de churn client.
+#
+# Version: 2.0 - Real-Time Churn Prediction System
+# Mise à jour: Ajout validation set, feature engineering avancé, chemins relatifs
+# Auteur: Data Science Team
+
+# --- 1. Configuration des Chemins de Fichiers ---
+# IMPORTANT: Chemins RELATIFS pour portabilité multi-plateforme
+data:
+  raw_data_path: "data/WA_Fn-UseC_-Telco-Customer-Churn.csv"  # Chemin relatif (was absolute)
+  preprocessor_path: "data/preprocessor.joblib"
+  models_dir: "models"  # Répertoire pour sauvegarder les modèles
+
+
+# --- 2. Paramètres du Pipeline de Prétraitement ---
+preprocessing:
+  # Split train/val/test: 70%/15%/15% (implémenté via double split dans code)
+  test_size: 0.30  # Premier split: 70% train, 30% temp
+  val_test_size: 0.50  # Deuxième split du temp: 50% = 15% val, 15% test
+  random_state: 42  # Graine pour reproductibilité complète
+
+
+# --- 3. Configuration du Feature Engineering ---
+feature_engineering:
+  enabled: true
+  # Types de features à créer (toutes activées pour performance maximale)
+  create_charge_features: true      # avg_monthly_charge, charge_variance
+  create_tenure_features: true      # tenure_group, is_new_customer
+  create_service_features: true     # service_count, security_services_count
+  create_interaction_features: true # has_family, long_contract_auto_pay
+  create_segment_features: true     # value_segment, churn_risk_score
+
+
+# --- 4. Configuration de l'Entraînement des Modèles ---
+training:
+  experiment_name: "Churn_RealTime_System_V2"  # Nouveau nom d'expérience
+
+  # Paramètres pour la recherche d'hyperparamètres
+  hyperparameter_tuning:
+    n_iter: 50  # Augmenté de 10 à 50 pour meilleure exploration (Phase 2)
+    cv: 5  # Nombre de plis pour validation croisée
+    scoring: "f1"  # Métrique à optimiser (bon pour classes déséquilibrées)
+    n_jobs: -1  # Utiliser tous les CPU disponibles
+    verbose: 2  # Niveau de verbosité
+
+# --- 5. Définition des Modèles et de leurs Grilles d'Hyperparamètres ---
+# Note: Le préfixe 'model__' est nécessaire car le modèle est dans un pipeline (SMOTE -> model)
+
+models:
+  RandomForest:
+    # Random Forest Classifier - Excellente baseline pour churn
+    active: true
+    param_grid:
+      model__n_estimators: [100, 200, 300, 500]  # Étendu pour exploration
+      model__max_depth: [10, 20, 30, 40, null]  # null = pas de limite
+      model__min_samples_split: [2, 5, 10, 15]  # Contrôle overfitting
+      model__min_samples_leaf: [1, 2, 4, 8]  # Contrôle overfitting
+      model__max_features: ['sqrt', 'log2', null]  # Diversité des arbres
+      model__class_weight: ['balanced', 'balanced_subsample']  # Gestion déséquilibre
+
+  XGBoost:
+    # XGBoost - Souvent le meilleur pour churn prediction
+    active: true
+    param_grid:
+      model__n_estimators: [100, 200, 300, 500]
+      model__learning_rate: [0.01, 0.05, 0.1, 0.2]  # Étendu
+      model__max_depth: [3, 5, 7, 9]  # Plus de profondeur
+      model__subsample: [0.6, 0.7, 0.8, 0.9]  # Stochastic gradient boosting
+      model__colsample_bytree: [0.6, 0.7, 0.8, 0.9]  # Feature sampling
+      model__min_child_weight: [1, 3, 5]  # Contrôle overfitting
+      model__gamma: [0, 0.1, 0.2]  # Minimum loss reduction
+      model__scale_pos_weight: [1, 2, 3]  # Gestion déséquilibre (ratio 3:1)
+
+  MLPClassifier:
+    # Neural Network - Peut capturer des patterns complexes
+    active: false
+    param_grid:
+      model__hidden_layer_sizes: [[64, 32], [100, 50], [128, 64, 32]]  # Architectures variées
+      model__activation: ['relu', 'tanh']
+      model__solver: ['adam']
+      model__alpha: [0.0001, 0.001, 0.01]  # Régularisation L2
+      model__learning_rate: ['constant', 'adaptive']
+      model__max_iter: [500, 1000]  # Plus d'itérations pour convergence
+
+  # --- Nouveaux modèles pour Phase 2 (à activer plus tard) ---
+  LightGBM:
+    # LightGBM - Très rapide et performant
+    active: true  # À activer en Phase 2
+    param_grid:
+      model__n_estimators: [100, 200, 300]
+      model__learning_rate: [0.01, 0.05, 0.1]
+      model__max_depth: [5, 7, 10]
+      model__num_leaves: [31, 50, 70]
+      model__min_child_samples: [20, 30, 50]
+      model__subsample: [0.7, 0.8, 0.9]
+      model__colsample_bytree: [0.7, 0.8, 0.9]
+
+  CatBoost:
+    # CatBoost - Excellent pour features catégorielles
+    active: true  # À activer en Phase 2
+    param_grid:
+      model__iterations: [100, 200, 300]
+      model__learning_rate: [0.01, 0.05, 0.1]
+      model__depth: [4, 6, 8]
+      model__l2_leaf_reg: [1, 3, 5]
+
+
+# --- 6. Configuration de l'Ensembling (Phase 2) ---
+ensembling:
+  enabled: true  # À activer après avoir les modèles individuels
+  stacking:
+    meta_model: "LogisticRegression"
+    use_probabilities: true
+  voting:
+    voting_type: "soft"  # Utiliser les probabilités
+    weights: null  # Automatique (égal) ou [2, 3, 1] pour pondérer
+
+
+# --- 7. Configuration du Threshold Tuning (Phase 3) ---
+threshold_optimization:
+  enabled: true  # À activer en Phase 3
+  metric: "f1"  # Métrique à optimiser
+  search_range: [0.3, 0.7]  # Rechercher entre 30% et 70%
+  n_thresholds: 100  # Nombre de seuils à tester
+
+
+# --- 8. Configuration du Monitoring (Phase 6) ---
+monitoring:
+  enabled: true
+  check_data_drift: true
+  drift_detection_window: 1000  # Nombre de prédictions
+  performance_threshold: 0.70  # Alerte si F1 < 70%

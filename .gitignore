@@ -25,31 +25,45 @@ __pycache__/
 .idea/
 
 # ============================
-# DONNÉES (DVC MANAGED)
+# DONNÉES (exceptions pour fichiers necessaires)
 # ============================
-data/
 data/raw/
 data/interim/
 data/processed/
-*.csv
 *.parquet
-*.txt
 *.xlsx
+# Garder le dataset principal et le preprocessor
+!data/WA_Fn-UseC_-Telco-Customer-Churn.csv
+!data/preprocessor.joblib
 
 # ============================
 # ARTEFACTS EXPÉRIMENTATION
 # ============================
 mlruns/
 notebooks/mlruns/
+mlflow_tracking/
+.pytest_cache/
 
 # ============================
-# ARTEFACTS DE MODÈLES
+# ARTEFACTS DE MODÈLES (garder modeles de production)
 # ============================
-models/
-*.joblib
-*.pkl
-*.h5
-*.onnx
+# Ignorer tous les modeles sauf ceux de production
+models/*.joblib
+models/*.pkl
+models/*.png
+models/*.csv
+# Garder les modeles finaux
+!models/best_ensemble_final.joblib
+!models/RandomForest_best_model.joblib
+!models/XGBoost_best_model.joblib
+!models/CatBoost_best_model.joblib
+!models/LightGBM_best_model.joblib
+!models/model_comparison_results.csv
+
+# ============================
+# PRODUCTION PACKAGE (ne PAS ignorer)
+# ============================
+!production/
 
 # ============================
 # LOGS / OUTPUTS

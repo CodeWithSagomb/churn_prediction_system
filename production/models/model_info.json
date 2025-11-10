@@ -1,0 +1,26 @@
+{
+  "model_name": "Best Ensemble Final",
+  "model_path": "models/best_ensemble_final.joblib",
+  "test_f1": 0.6181,
+  "test_precision": 0.5556,
+  "test_recall": 0.6964,
+  "test_roc_auc": 0.8278,
+  "threshold": 0.55,
+  "models_included": [
+    "RandomForest",
+    "XGBoost",
+    "CatBoost",
+    "LightGBM"
+  ],
+  "weights": [
+    0.16,
+    0.84,
+    0.04,
+    2.96
+  ],
+  "description": "Ensemble de 4 modeles optimise avec threshold et poids",
+  "creation_date": "2025-11-10",
+  "n_features": 68,
+  "includes_feature_engineering": true,
+  "includes_smote": true
+}
